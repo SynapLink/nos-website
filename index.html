@@ -58,7 +58,7 @@
     <pre id="jsonDataContainer" style="display: none;"><code></code></pre>
     <pre id="terminal" style="display: none; border: 1px solid #888; padding: 10px;"></pre>
 
-    <p>ofc im not a wannabe hacker or a skid like someone who opened this website, just ran you through ipinfo.io so sybau, u are not cool.</p>
+    <p>ofc im not a wannabe hacker or a skid like someone who opened this website, just ran you through an API so sybau, u are not cool.</p>
     <hr>
     <div>
         <input type="checkbox" id="skidCheckbox">
@@ -136,30 +136,28 @@
 
         (async function () {
             try {
-                // EDITED: Switched to the ipinfo.io API which supports free HTTPS
-                const response = await fetch('https://ipinfo.io/json');
+                // EDITED: Switched to the ipwho.is API for better accuracy
+                const response = await fetch('https://ipwho.is/');
                 const data = await response.json();
 
-                if (!data) {
-                    throw new Error('Failed to fetch data from API.');
+                if (!data.success) { // ipwho.is uses a 'success' boolean
+                    throw new Error(data.message || 'Failed to fetch data from API.');
                 }
 
                 fullApiData = data;
 
-                // EDITED: Changed variables to match ipinfo.io's response (ip, region, org)
-                let infoText = `You appear to be connecting from ${data.city}, a city in the region of ${data.region}, located in ${data.country}. Your public IP address is ${data.ip}, provided by the ISP "${data.org}".`;
-                
-                // NOTE: ipinfo.io doesn't have a reliable proxy field on the free plan, so that check is removed.
+                // EDITED: Changed variables to match ipwho.is's response (ip, region, isp)
+                let infoText = `You appear to be connecting from ${data.city}, a city in the region of ${data.region}, located in ${data.country}. Your public IP address is ${data.ip}, provided by the ISP "${data.isp}".`;
                 
                 userInfoElement.textContent = infoText;
 
                 const formattedJson = JSON.stringify(fullApiData, null, 2);
                 codeElement.textContent = formattedJson;
 
-                // EDITED: Changed variables to match ipinfo.io's response
+                // EDITED: Changed variables to match ipwho.is's response
                 document.getElementById('userCityPlaceholder').textContent = data.city || 'an unknown city';
                 document.getElementById('userIpPlaceholder').textContent = data.ip || 'your IP';
-                document.getElementById('userIspPlaceholder').textContent = data.org || 'an unknown ISP';
+                document.getElementById('userIspPlaceholder').textContent = data.isp || 'an unknown ISP';
 
             } catch (error) {
                 console.error("API Error:", error);
