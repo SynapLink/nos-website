@@ -1,0 +1,266 @@
+﻿<!-- LEMME JUST PRESS THIS F12 KEY TO OPEN DEV PANEL -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOtSkid</title>
+    <style>
+        .falling-text {
+            position: fixed;
+            top: -50px;
+            font-size: 2em;
+            pointer-events: none;
+            user-select: none;
+            animation: fall 5s linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(110vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        #tipOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #tipMenu {
+            background-color: white;
+            color: black;
+            padding: 20px;
+            border: 1px solid black;
+            min-width: 300px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>clipped!</h1>
+
+    <p id="userInfo">Analyzing connection...</p>
+
+    <button id="toggleJsonButton">output</button>
+    <button id="fallingTextButton">67</button>
+    <button id="dialoguesButton">dialogues</button>
+    <button id="hackButton">initiate_hack.sh</button>
+    <button id="openTipMenuButton">tip a $</button>
+
+    <pre id="jsonDataContainer" style="display: none;"><code></code></pre>
+    <pre id="terminal" style="display: none; border: 1px solid #888; padding: 10px;"></pre>
+
+    <p>ofc im not a wannabe hacker or a skid like someone who opened this website, just ran you through ip-api.com so sybau, u are not cool.</p>
+    <hr>
+    <div>
+        <input type="checkbox" id="skidCheckbox">
+        <label for="skidCheckbox">im a skid</label>
+    </div>
+    <p id="skidText" style="display: none;">Yeah, we know. It's the first step to recovery.</p>
+
+    <div id="dialoguesContainer" style="display: none;">
+        <hr>
+        <h3>idk wtf is this</h3>
+        <p><b>Don't do this:</b></p>
+        <p><b>@sybbau777hax1337:</b> What if I tell you I will do a DDoS attack on your IP</p>
+        <p><b>@idk:</b> OK.</p>
+        <p><b>@sybbau777hax1337:</b> nmap -T4 192.168.1.108 That's how I will find your ports</p>
+        <p><b>@idk:</b> You're funny dude</p>
+        <p><i>Note that Mister Sybbau777hax1337 just found a random IP and wants to harm the person owning this IP to get someone interested in him.</i></p>
+        <hr>
+        <h3>How it Relates to You</h3>
+        <p>People who do this are generally trying to be scary by dropping random information, like "Your city is <b id="userCityPlaceholder">[loading...]</b>" that they just found by typing <b id="userIpPlaceholder">[loading...]</b> into ip-api.com.</p>
+        <p>The same goes for:</p>
+        <blockquote>
+            "YOU LEAKED YOUR IP!!!"<br>
+            "I'm going to SWAT you 😈😈😈"<br>
+            "Gonna boot you"<br>
+            "Your ISP is <b id="userIspPlaceholder">[loading...]</b>"<br>
+            "You have a web server on 127.0.0.1 💀💀"<br>
+            "See you on doxbin.net"<br>
+            "Have a botnet ready for you!!!"
+        </blockquote>
+        <p><b>YOU ARE NOT SCARY✌️</b></p>
+        <hr>
+    </div>
+
+    <div id="tipOverlay" style="display: none;">
+        <div id="tipMenu">
+            <div id="fakeCardFormContainer">
+                <h3>Enter "Secure" Payment Details</h3>
+                <p><label>Cardholder Name:</label><br><input type="text" id="fakeName" placeholder="John Doe"></p>
+                <p><label>16-Digit Card Number:</label><br><input type="text" id="fakeCardNumber" placeholder="4167 6969 1337 8008"></p>
+                <p><label>Expiration (MM/YY):</label><br><input type="text" id="fakeExp" placeholder="12/34"></p>
+                <p><label>CVV Code:</label><br><input type="text" id="fakeCvc" placeholder="123"></p>
+                <button id="submitFakePaymentButton">Submit Payment</button>
+            </div>
+
+            <pre id="fakeProcessingText" style="display: none;"></pre>
+
+            <hr>
+            <button id="closeTipMenuButton">Close</button>
+        </div>
+    </div>
+
+
+    <script>
+        let fullApiData = null;
+
+        const userInfoElement = document.getElementById('userInfo');
+        const toggleButton = document.getElementById('toggleJsonButton');
+        const jsonDataContainer = document.getElementById('jsonDataContainer');
+        const codeElement = jsonDataContainer.querySelector('code');
+        const skidCheckbox = document.getElementById('skidCheckbox');
+        const skidText = document.getElementById('skidText');
+        const fallingTextButton = document.getElementById('fallingTextButton');
+        const dialoguesButton = document.getElementById('dialoguesButton');
+        const dialoguesContainer = document.getElementById('dialoguesContainer');
+        const hackButton = document.getElementById('hackButton');
+        const terminal = document.getElementById('terminal');
+        let isHacking = false;
+
+        const openTipMenuButton = document.getElementById('openTipMenuButton');
+        const tipOverlay = document.getElementById('tipOverlay');
+        const closeTipMenuButton = document.getElementById('closeTipMenuButton');
+        const fakeCardFormContainer = document.getElementById('fakeCardFormContainer');
+        const submitFakePaymentButton = document.getElementById('submitFakePaymentButton');
+        const fakeProcessingText = document.getElementById('fakeProcessingText');
+
+        (async function () {
+            try {
+                const response = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query,proxy,hosting');
+                const data = await response.json();
+
+                if (data.status !== 'success') {
+                    throw new Error(data.message || 'Failed to fetch data from API.');
+                }
+
+                fullApiData = data;
+
+                let infoText = `You appear to be connecting from ${data.city}, a city in the region of ${data.regionName}, located in ${data.country}. Your public IP address is ${data.query}, provided by the ISP "${data.isp}".`;
+                if (data.proxy || data.hosting) {
+                    infoText += " ...unless, ofc, you're using a vpn or proxy service, which this appears to be.";
+                }
+                userInfoElement.textContent = infoText;
+
+                const formattedJson = JSON.stringify(fullApiData, null, 2);
+                codeElement.textContent = formattedJson;
+
+                document.getElementById('userCityPlaceholder').textContent = data.city || 'an unknown city';
+                document.getElementById('userIpPlaceholder').textContent = data.query || 'your IP';
+                document.getElementById('userIspPlaceholder').textContent = data.isp || 'an unknown ISP';
+
+            } catch (error) {
+                console.error("API Error:", error);
+                userInfoElement.textContent = "Could not retrieve your connection details. 👍✌️";
+                toggleButton.disabled = true;
+                dialoguesButton.disabled = true;
+                hackButton.disabled = true;
+            }
+        })();
+
+
+        toggleButton.addEventListener('click', () => {
+            jsonDataContainer.style.display = jsonDataContainer.style.display === 'none' ? 'block' : 'none';
+        });
+
+        skidCheckbox.addEventListener('change', () => {
+            skidText.style.display = skidCheckbox.checked ? 'block' : 'none';
+        });
+
+        fallingTextButton.addEventListener('click', () => {
+            const fallingElement = document.createElement('span');
+            fallingElement.className = 'falling-text';
+            fallingElement.textContent = '67';
+            const randomX = Math.random() * (window.innerWidth - 40);
+            fallingElement.style.left = `${randomX}px`;
+            document.body.appendChild(fallingElement);
+            fallingElement.addEventListener('animationend', () => fallingElement.remove());
+        });
+
+        dialoguesButton.addEventListener('click', () => {
+            dialoguesContainer.style.display = dialoguesContainer.style.display === 'none' ? 'block' : 'none';
+        });
+
+        const hackSequence = [
+            '>>> Bypassing mainframe security...', '>>> Accessing neural network...',
+            '>>> Encrypting user IP: [CLASSIFIED]', '>>> Injecting SQL... Injection failed.',
+            '>>> Downloading RAM...', '>>> Found user cringe levels: CRITICAL',
+            '>>> Reversing the polarity of the neutron flow...', '>>> Operation complete. User is still a skid.',
+            '>>> Self-destructing in 3... 2... 1...', ''
+        ];
+
+        hackButton.addEventListener('click', () => {
+            if (isHacking) return;
+            isHacking = true;
+            terminal.style.display = 'block';
+            terminal.textContent = '';
+            let lineIndex = 0;
+            function typeLine() {
+                if (lineIndex < hackSequence.length) {
+                    terminal.innerHTML += hackSequence[lineIndex] + '\n';
+                    lineIndex++;
+                    setTimeout(typeLine, Math.random() * 500 + 200);
+                } else {
+                    setTimeout(() => {
+                        terminal.style.display = 'none';
+                        isHacking = false;
+                    }, 2000);
+                }
+            }
+            typeLine();
+        });
+
+
+        openTipMenuButton.addEventListener('click', () => {
+            tipOverlay.style.display = 'flex';
+        });
+
+        closeTipMenuButton.addEventListener('click', () => {
+            tipOverlay.style.display = 'none';
+            fakeCardFormContainer.style.display = 'block';
+            fakeProcessingText.style.display = 'none';
+            fakeProcessingText.textContent = '';
+        });
+
+        submitFakePaymentButton.addEventListener('click', () => {
+            const hackerName = document.getElementById('fakeName').value || 'Anonymous Skid';
+            fakeCardFormContainer.style.display = 'none';
+            fakeProcessingText.style.display = 'block';
+            fakeProcessingText.textContent = '';
+
+            const processingSequence = [
+                '>>> Initializing transaction...', '>>> Bypassing bank security... Trivial.',
+                '>>> Connecting to offshore server...', '>>> Encrypting connection with 128-bit ROT13...',
+                '>>> SUCCESS! Routing funds...', `>>> Draining account of ${hackerName}...`,
+                '>>> Transaction complete. Thanks for the $$$!', '>>> Your (fake) details have been added to our (fake) database.',
+                '>>> Closing connection...'
+            ];
+
+            let lineIndex = 0;
+            function typeLine() {
+                if (lineIndex < processingSequence.length) {
+                    fakeProcessingText.innerHTML += processingSequence[lineIndex] + '\n';
+                    lineIndex++;
+                    setTimeout(typeLine, Math.random() * 400 + 150);
+                } else {
+                    setTimeout(() => { closeTipMenuButton.click(); }, 2500);
+                }
+            }
+            typeLine();
+        });
+    </script>
+
+    <hr>
+    <p>creds to noskid.today</p>
+
+</body>
+</html>
