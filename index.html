@@ -136,28 +136,27 @@
 
         (async function () {
             try {
-                // EDITED: Switched to the ipwho.is API for better accuracy
                 const response = await fetch('https://ipwho.is/');
                 const data = await response.json();
 
-                if (!data.success) { // ipwho.is uses a 'success' boolean
+                if (!data.success) {
                     throw new Error(data.message || 'Failed to fetch data from API.');
                 }
 
                 fullApiData = data;
 
-                // EDITED: Changed variables to match ipwho.is's response (ip, region, isp)
-                let infoText = `You appear to be connecting from ${data.city}, a city in the region of ${data.region}, located in ${data.country}. Your public IP address is ${data.ip}, provided by the ISP "${data.isp}".`;
+                // EDITED: Changed data.isp to data.connection.isp to access the nested value
+                let infoText = `You appear to be connecting from ${data.city}, a city in the region of ${data.region}, located in ${data.country}. Your public IP address is ${data.ip}, provided by the ISP "${data.connection.isp}".`;
                 
                 userInfoElement.textContent = infoText;
 
                 const formattedJson = JSON.stringify(fullApiData, null, 2);
                 codeElement.textContent = formattedJson;
 
-                // EDITED: Changed variables to match ipwho.is's response
+                // EDITED: Changed data.isp to data.connection.isp here as well
                 document.getElementById('userCityPlaceholder').textContent = data.city || 'an unknown city';
                 document.getElementById('userIpPlaceholder').textContent = data.ip || 'your IP';
-                document.getElementById('userIspPlaceholder').textContent = data.isp || 'an unknown ISP';
+                document.getElementById('userIspPlaceholder').textContent = data.connection.isp || 'an unknown ISP';
 
             } catch (error) {
                 console.error("API Error:", error);
