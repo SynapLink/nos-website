@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NOtSkid</title>
     <style>
+        body {
+            position: relative;
+            z-index: 1;
+        }
+
         .falling-text {
             position: fixed;
             top: -50px;
@@ -32,6 +37,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            z-index: 100;
         }
 
         #tipMenu {
@@ -120,8 +126,29 @@
         .epilepsy-mode button {
             animation: shake 0.2s infinite, spin 0.5s linear infinite, warp 0.3s infinite, blink 0.1s step-end infinite;
         }
+
         .epilepsy-mode p, .epilepsy-mode h1, .epilepsy-mode h3, .epilepsy-mode label, .epilepsy-mode i, .epilepsy-mode b {
             animation: flash 0.15s infinite;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: var(--flag-bg-url); 
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            opacity: 0; 
+            z-index: -1; 
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        body.flag-background::before {
+            opacity: 0.5;
         }
     </style>
 </head>
@@ -148,29 +175,18 @@
     <p id="skidText" style="display: none;">Yeah, we know. It's the first step to recovery.</p>
 
     <div id="dialoguesContainer" style="display: none;">
-        <hr>
-        <h3>idk wtf is this</h3>
+        <hr><h3>idk wtf is this</h3>
         <p><b>Don't do this:</b></p>
         <p><b>@sybbau777hax1337:</b> What if I tell you I will do a DDoS attack on your IP</p>
         <p><b>@idk:</b> OK.</p>
         <p><b>@sybbau777hax1337:</b> nmap -T4 192.168.1.108 That's how I will find your ports</p>
         <p><b>@idk:</b> You're funny dude</p>
         <p><i>Note that Mister Sybbau777hax1337 just found a random IP and wants to harm the person owning this IP to get someone interested in him.</i></p>
-        <hr>
-        <h3>How it Relates to You</h3>
+        <hr><h3>How it Relates to You</h3>
         <p>People who do this are generally trying to be scary by dropping random information, like "Your city is <b id="userCityPlaceholder">[loading...]</b>" that they just found by typing <b id="userIpPlaceholder">[loading...]</b> into an IP lookup website.</p>
         <p>The same goes for:</p>
-        <blockquote>
-            "YOU LEAKED YOUR IP!!!"<br>
-            "I'm going to SWAT you 😈😈😈"<br>
-            "Gonna boot you"<br>
-            "Your ISP is <b id="userIspPlaceholder">[loading...]</b>"<br>
-            "You have a web server on 127.0.0.1 💀💀"<br>
-            "See you on doxbin.net"<br>
-            "Have a botnet ready for you!!!"
-        </blockquote>
-        <p><b>YOU ARE NOT SCARY✌️</b></p>
-        <hr>
+        <blockquote>"YOU LEAKED YOUR IP!!!"<br>"I'm going to SWAT you 😈😈😈"<br>"Gonna boot you"<br>"Your ISP is <b id="userIspPlaceholder">[loading...]</b>"<br>"You have a web server on 127.0.0.1 💀💀"<br>"See you on doxbin.net"<br>"Have a botnet ready for you!!!"</blockquote>
+        <p><b>YOU ARE NOT SCARY✌️</b></p><hr>
     </div>
 
     <div id="tipOverlay" style="display: none;">
@@ -195,6 +211,7 @@
     <div style="height: 300vh;"></div>
 
     <hr>
+    <p><small><b>Warning:</b> The button below may trigger photosensitive epilepsy.</small></p>
     <button id="epilepsyButton">OK</button>
 
 
@@ -245,7 +262,20 @@
             })();
 
             toggleButton.addEventListener('click', () => { jsonDataContainer.style.display = jsonDataContainer.style.display === 'none' ? 'block' : 'none'; });
-            skidCheckbox.addEventListener('change', () => { skidText.style.display = skidCheckbox.checked ? 'block' : 'none'; });
+
+            skidCheckbox.addEventListener('change', () => {
+                skidText.style.display = skidCheckbox.checked ? 'block' : 'none';
+
+                if (skidCheckbox.checked) {
+                    if (fullApiData && fullApiData.flag && fullApiData.flag.img) {
+                        document.documentElement.style.setProperty('--flag-bg-url', `url('${fullApiData.flag.img}')`);
+                        document.body.classList.add('flag-background');
+                    }
+                } else {
+                    document.body.classList.remove('flag-background');
+                }
+            });
+
             fallingTextButton.addEventListener('click', () => {
                 const fallingElement = document.createElement('span');
                 fallingElement.className = 'falling-text';
